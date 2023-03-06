@@ -1,0 +1,1 @@
+Readme for the graphical_js folder which includes the necessary scripts in threejs and explanations as well as the docker images and any other type of file related to this simulation

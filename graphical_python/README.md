@@ -1,0 +1,1 @@
+Readme for the graphical_python folder that includes the necessary scripts using tkinter or pygame and explanations as well as docker images and any other type of file related to this simulation

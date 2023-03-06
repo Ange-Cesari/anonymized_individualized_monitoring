@@ -1,0 +1,1 @@
+Readme for the 2d simulation folder which includes the necessary scripts and explanations as well as the docker images and any other file type related to this simulation
