@@ -3,7 +3,7 @@ L'objectif de cette partie est de prédire la trajectoire future d'un piéton en
 Dans ce cas précis, les 8 premières positions d'un piéton sont données et les 12 suivantes doivent être prédites à l'aide de ces informations. Le problème est illustré dans l'image suivante.
 
 <p align="center">
-	<img src="pred_of_one_pedestrian.png" width="400"> 
+	<img src="images/pred_of_one_pedestrian.png" width="400"> 
 <p align="center">
 		Exemple de trajectoire d'un piéton. A l'aide des huit premières observations
 </p>
@@ -16,7 +16,7 @@ L'ensemble de données de position donné a d'abord été divisé en données d'
 Puis, un réseau de neurones basé sur le modèle LSTM a été entraîné sur 20 epoch avec des batch de taille 16 avec un learning rate de 0.00005.
 
 <p align="center">
-	<img src="model_representation.png" width="400"> 
+	<img src="images/model_representation.png" width="400"> 
 
 <p align="center">
 		Représentation du modèle LSTM utilisé comme solution au problème.
@@ -38,7 +38,7 @@ L'approche présentée a ensuite été évaluée à l'aide de deux métriques co
 Beacoup des trajectoires posent problèmes car elle ne sont pas aussi simples que vu précédemment. Les changements brusques de direction et de vitesse rendent le comportement des piétons souvent imprévisible, ce qui entraîne des pertes de performance pour la prédiction. Quelques exemples :
 
 <p align="center">
-	<img src="brutal_direction_modification.png" width="400">
+	<img src="images/brutal_direction_modification.png" width="400">
 
 <p align="center"> Un changement brutal de la direction provoque une erreur exponentielle de l'algorithme.
 </p>
@@ -47,7 +47,7 @@ Beacoup des trajectoires posent problèmes car elle ne sont pas aussi simples qu
 
 
 <p align="center">
-	<img src="less_observed_prediction.png" width="400">
+	<img src="images/less_observed_prediction.png" width="400">
 <p align="center"> Si le piéton s'arrête l'algorithme va tout de même essayer de prédire son futur déplacement.
 </p>
 </p>

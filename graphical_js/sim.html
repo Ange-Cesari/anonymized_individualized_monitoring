@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>My first three.js app</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.143/build/three.min.js"></script>
+    <script>
+      // création de la scène
+      var scene = new THREE.Scene();
+
+      // couleur de fond noire
+      scene.background = new THREE.Color(0, 0, 0);
+
+      // création de la caméra
+      var camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.z = 10;
+      camera.position.y = 0.5;
+      camera.position.x = -0.5;
+      scene.add(camera);
+
+      // création du render
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // création des points
+      var p1 = [];
+      p1.push(new THREE.Vector3(0, 0, 0));
+      p1.push(new THREE.Vector3(1, 1, 1));
+      p1.push(new THREE.Vector3(-1, -1, -1));
+
+      // création du metériel
+      var material = new THREE.PointsMaterial({ color: 0xffffff });
+
+      // axes x et y
+      const points = [];
+      points.push(new THREE.Vector3(0, 0, 0));
+      points.push(new THREE.Vector3(5, 0, 0));
+      points.push(new THREE.Vector3(0, 0, 0));
+      points.push(new THREE.Vector3(0, 5, 0));
+      points.push(new THREE.Vector3(0, 0, 0));
+      points.push(new THREE.Vector3(0, 0, 5));
+      let geometry = new THREE.BufferGeometry().setFromPoints(points);
+      let line = new THREE.Line(
+        geometry,
+        new THREE.LineBasicMaterial({ color: 0x888888 })
+      );
+      scene.add(line);
+
+      lecture();
+
+      // création points
+      var geometries = [];
+
+      var colors = [];
+
+      function lecture() {
+        fetch("fichier.json")
+          .then((response) => response.json())
+          .then((data) => {
+            data.humains.forEach((e) => {
+              geometries.push(new THREE.Vector3(e.x, e.y, e.z));
+              let colorHex = parseInt(e.couleur, 16);
+              colors.push(new THREE.Color(colorHex));
+              var colorAttribute = new THREE.Float32BufferAttribute(
+                colors.flatMap((color) => color.toArray()),
+                3
+              );
+              var geometry = new THREE.BufferGeometry().setFromPoints(
+                geometries
+              );
+              geometry.setAttribute("color", colorAttribute);
+              var material = new THREE.PointsMaterial({
+                vertexColors: true,
+                size: 0.5,
+              });
+              var point = new THREE.Points(geometry, material);
+              scene.add(point);
+            });
+          });
+      }
+
+      // création de l'annimation
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>
