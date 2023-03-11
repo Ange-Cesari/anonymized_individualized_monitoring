@@ -1,3 +1,6 @@
+"""
+CODE WRITTEN BY Ange Cesari
+"""
 import json
 import pygame
 import os

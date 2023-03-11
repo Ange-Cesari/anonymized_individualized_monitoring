@@ -1,3 +1,6 @@
+"""
+CODE WRITTEN BY Aurélie Martin
+"""
 import pygame
 import random
 import matplotlib.pyplot as plt
