@@ -2,6 +2,13 @@
 CODE WRITTEN BY Paul-Emile NEU
 Purpose : Predict a trajectory with the help of kalman filters and markov model
 Return : A set of chart to plot the true trajectory and the predicted one
+
+
+HOW IT WORKS : 
+This program use the default kalman filters to predict a trajectory. Because kalman is good for prediction but may be not as accurate as wanted
+and can create irremediable errors we have added markov properties to kalman's calculations making it less prone to errors based solely on measurement, transitions and the previous state when predicting the next state. This algorithm therefore acts as a discrete variable Kalman filter, adding the fact that the probability of being in a place at a time T depends only on the previous state.
+
+The limitations of this algorithm will arise when the parameters passed as input are not very precise, too high to cause correct calculations or too far from reality. The strength of the model relies on the precision of the input parameters (the transition matrix, the observation matrix, the initial state and the measurement noises). The more these parameters are precise and adapted to the statistical model of human movement, the more accurate and precise the predictions will be.
 """
 
 import numpy as np
@@ -21,8 +28,8 @@ class KalmanMarkovPredictor:
         """
         Class constructor to set all useful variable
         """
-        self.state = initial_state #the current state
-        self.transition_matrix = transition_matrix #
+        self.state = initial_state 
+        self.transition_matrix = transition_matrix 
         self.observation_matrix = observation_matrix
         self.process_noise_cov = process_noise_cov
         self.observation_noise_cov = observation_noise_cov
@@ -31,13 +38,35 @@ class KalmanMarkovPredictor:
         self.predicted_covariance = np.zeros_like(self.transition_matrix)
 
     def predict(self):
+        """
+            Predict a trajectory based on the transition matrix and the current state
+
+            PARAM : 
+                self : the context
+            
+            RETURN : 
+                the predicted state as a matrix
+        """
+        # Predict the next state using the transition matrix and current state
         self.predicted_state = np.dot(self.transition_matrix, self.state)
-        self.predicted_covariance = np.dot(self.transition_matrix, np.dot(self.predicted_covariance, self.transition_matrix.T)) + self.process_noise_cov
         
+        # Predict the covariance of the next state using the transition matrix, current covariance, and process noise covariance
+        self.predicted_covariance = np.dot(self.transition_matrix, np.dot(self.predicted_covariance, self.transition_matrix.T)) + self.process_noise_cov
+            
+        # Return the predicted state
         return self.predicted_state
 
     def update(self, observation):
+        """
+            Update the state based on the observation and the previous one
 
+            PARAM : 
+                self : the context
+                observation (array) : the measurement matrix
+            
+            RETURN : 
+                the new state
+        """
         #difference between observation and predicted observation
         computed_innovation = observation - np.dot(self.observation_matrix, self.predicted_state)
 
@@ -54,29 +83,58 @@ class KalmanMarkovPredictor:
         return self.state
 
     def generate_trajectory(self, num_steps):
+        """
+            Generate a trajectory based on step number and measurements
+
+            PARAM : 
+                self : the context
+                num_step (int) : the number of steps in the trajectory
+            
+            RETURN : 
+                the trajectory as an array (numpy)
+        """
+        # Initialize the trajectory with the current state
         trajectory = [self.state]
         
+        # Iterate over the specified number of steps
         for _ in range(num_steps):
+            # Predict the next state
             self.predict()
-            observation = np.dot(self.observation_matrix, self.predicted_state) + np.random.multivariate_normal(np.zeros(self.observation_matrix.shape[0]), self.observation_noise_cov)
-            self.update(observation)
-            trajectory.append(self.state)
             
+            # Generate an observation by taking a linear combination of the predicted state and adding observation noise
+            observation = np.dot(self.observation_matrix, self.predicted_state) + np.random.multivariate_normal(np.zeros(self.observation_matrix.shape[0]), self.observation_noise_cov)
+            
+            # Update the state estimate based on the observation
+            self.update(observation)
+            
+            # Add the updated state estimate to the trajectory
+            trajectory.append(self.state)
+        
+        # Return the trajectory as a numpy array
         return np.array(trajectory)
 
-# Define the parameters for the Kalman filter and Markov model
+
+# Define the initial state of the system as a 4-element vector
 initial_state = np.array([0, 0, 0, 0])
+
+# Define the transition matrix for the Markov model
 transition_matrix = np.array([
-    [1, 1, 0, 0],
-    [0, 1, 0, 1],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1]
+    [1, 1, 0, 0],   # The first and second elements of the state are updated based on the previous state
+    [0, 1, 0, 1],   # The second and fourth elements of the state are updated based on the previous state
+    [0, 0, 1, 0],   # The third element of the state is unchanged
+    [0, 0, 0, 1]    # The fourth element of the state is unchanged
 ])
+
+# Define the observation matrix for the Kalman filter
 observation_matrix = np.array([
-    [1, 1 , 1, 0],
-    [0, 1, 1, 0]
+    [1, 1 , 1, 0],  # elements of the observation are a linear combination of the state
+    [0, 1, 1, 0]    
 ])
-process_noise_cov = 0.01 * np.eye(4) #random disturbance in trajactory
+
+# Define the covariance of the process noise, which models random disturbances in the trajectory
+process_noise_cov = 0.01 * np.eye(4)
+
+# Define the covariance of the observation noise, which models measurement errors
 observation_noise_cov = 0.2 * np.eye(2)
 
 # Generate a predict a trajectory
@@ -110,6 +168,15 @@ y_lim_pred = (min(trajectory[:,1]), max(trajectory[:,1]))
          
 
 def update_true_plot(frame):
+    """
+       Update the true trajctory plot in real time (callback)
+
+        PARAM : 
+            frame (int) : the current frame
+        
+        RETURN : 
+            updated dataset
+    """
     global index_1, index_2
     if(index_1 < len(true_trajectory[:,0])):
         append_x_true.append(true_trajectory[index_1,0])
@@ -123,21 +190,16 @@ def update_true_plot(frame):
 
     return line1,
 
-# def copy_true_plot(frame):
-#     global index_1, index_2
-#     if(index_1 < len(true_trajectory[:,0])):
-#         copy_x_true.append(true_trajectory[index_1,0])
-#         index_1 +=1
-
-#     if(index_2 < len(true_trajectory[:,1])):
-#         copy_y_true.append(true_trajectory[index_2,1])
-#         index_2 +=1
- 
-#     line3.set_data(copy_x_true, copy_y_true) 
-
-#     return line3,
-
 def update_predicted_plot(frame):
+    """
+       Update the predicted trajctory plot in real time (callback)
+
+        PARAM : 
+            frame (int) : the current frame
+        
+        RETURN : 
+            updated dataset
+    """
     global index_1, index_2
 
     if(index_1 < len(true_trajectory[:,0])):
@@ -153,8 +215,8 @@ def update_predicted_plot(frame):
     return line2,
 
 
-animation_true = FuncAnimation(fig, update_true_plot, blit=True,interval=600)
-# animation_true_copy = FuncAnimation(fig, copy_true_plot, blit=True,interval=100)
+#callback for plotting animations
+animation_true = FuncAnimation(fig, update_true_plot, blit=True,interval=100)
 animation_predicted = FuncAnimation(fig, update_predicted_plot, blit=True,interval=100)
 
 
